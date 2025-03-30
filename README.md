@@ -18,7 +18,7 @@ just a few clicks.
 
 ## Requirements
 
-- **Python 3.12**: Ensure you have Python 3.12 or higher installed on your system.
+- **Python 3.9**: Ensure you have Python 3.9 or higher installed on your system.
 
 ## Usage
 
@@ -56,3 +56,7 @@ docker run -d --name subscription-manager -p 5000:5000 dreamscape315419/subscrip
 1. **The target of subconverter in this project is default as 'clash', other targets are not supported yet.**
 2. **When your base URL is not HTTPS, you are unable to use copy link button.**
 
+## License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+Powered by Flask-Admin, Subconverter, and Flask.
