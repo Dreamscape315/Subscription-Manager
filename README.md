@@ -44,9 +44,15 @@ python run.py
 
 ### Docker
 
-(Still in development)
-
+```
+docker pull dreamscape315419/subscription-manager
+```
+```
+docker run -d --name subscription-manager -p 5000:5000 dreamscape315419/subscription-manager
+```
 
 ## Note
 
-The target of subconverter in this project is default as 'clash', other targets are not supported yet.
+1. **The target of subconverter in this project is default as 'clash', other targets are not supported yet.**
+2. **When your base URL is not HTTPS, you are unable to use copy link button.**
+
