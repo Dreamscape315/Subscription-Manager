@@ -1,0 +1,103 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<div class="container">
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <h1 class="display-4">Complex Subscription Manager</h1>
+            <p class="lead">One URL to ALL</p>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12 mb-4">
+            <a href="{{ url_for('originalsubscription.index_view') }}" class="text-decoration-none">
+                <div class="card shadow-sm hover-card">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="flex-shrink-0 me-4 text-center" style="width: 80px;">
+                            <i class="fa fa-list fa-3x text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h4 class="card-title text-primary">Original Sub Management</h4>
+                            <p class="card-text text-muted">Adding your subs or nodes</p>
+                        </div>
+                        <div class="ms-auto">
+                            <i class="fa fa-chevron-right fa-2x text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-12 mb-4">
+            <a href="{{ url_for('subscription.index_view') }}" class="text-decoration-none">
+                <div class="card shadow-sm hover-card">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="flex-shrink-0 me-4 text-center" style="width: 80px;">
+                            <i class="fa fa-sitemap fa-3x text-success"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h4 class="card-title text-success">Complex Sub Management</h4>
+                            <p class="card-text text-muted">Generate your custom complex subscription url</p>
+                        </div>
+                        <div class="ms-auto">
+                            <i class="fa fa-chevron-right fa-2x text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-12 mb-4">
+            <a href="{{ url_for('settings.index_view') }}" class="text-decoration-none">
+                <div class="card shadow-sm hover-card">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="flex-shrink-0 me-4 text-center" style="width: 80px;">
+                            <i class="fa fa-cog fa-3x text-info"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h4 class="card-title text-info">Settings</h4>
+                            <p class="card-text text-muted">Just settings</p>
+                        </div>
+                        <div class="ms-auto">
+                            <i class="fa fa-chevron-right fa-2x text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-light">
+                <div class="card-body">
+                    <h5 class="card-title">About</h5>
+                    <p>This subscription management system allows you to organize original subscriptions while
+                        leveraging the Subconverter backend and its built-in rule sets to merge multiple sources
+                        into new, optimized subscription links with permanent URLs. Simplify your subscription management
+                        workflow by transforming scattered proxy resources into coherent, customized configurations with
+                        just a few clicks.</p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="mt-5 text-center text-muted">
+    <p>Subscription Manager &copy; 2025</p>
+    <p>github<p>
+    <p>Akatsuki Sky<p>
+</footer>
+
+<style>
+.hover-card {
+    transition: all 0.3s ease;
+}
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+}
+</style>
+{% endblock %}
