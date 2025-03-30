@@ -134,6 +134,7 @@ class AdminIndexView(AdminIndexView):
 
     @expose('/login', methods=['GET', 'POST'])
     def login(self):
+
         if session.get('admin_logged_in'):
             return redirect(url_for('.index'))
 

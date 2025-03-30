@@ -44,8 +44,8 @@ def create_app(config_class='app.config.DevelopmentConfig'):
         default_settings = [
             {'key': 'subconverter_api', 'value': 'https://example.com/sub',
              'description': 'example: http(s)://example.com/sub , must end with /sub'},
-            {'key': 'base_url', 'value': 'http://localhost:4869',
-             'description': 'Do not change this unless you know what you are doing'},
+            {'key': 'base_url', 'value': 'https://localhost:5000',
+             'description': 'Please use HTTPS, example: https://example.com(:port), otherwise the copy link will not work'},
             {'key': 'admin_password', 'value': 'admin',
              'description': 'Admin password for the admin panel, default is "admin"'},
         ]
