@@ -10,7 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 # Initialize extensions
 db = SQLAlchemy()
 from app.views.admin_views import AdminIndexView
-admin = Admin(name='Subscription Manager', theme= Bootstrap4Theme(swatch = 'Minty', fluid=True),index_view=AdminIndexView())
+admin = Admin(name='Subscription Manager', theme= Bootstrap4Theme(swatch = 'minty', fluid=True),index_view=AdminIndexView())
 
 
 def create_app(config_class='app.config.DevelopmentConfig'):

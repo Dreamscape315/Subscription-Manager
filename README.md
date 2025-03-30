@@ -26,9 +26,14 @@ just a few clicks.
 
 1. **Clone the Repository**: Clone this repository to your local machine using Git.
 ```
-git Clone https://github.com/Dreamscape315/Subscription-Manager.git
+git clone https://github.com/Dreamscape315/Subscription-Manager.git
 ```
 2. **Install Dependencies**: Navigate to the project directory and install the required dependencies using pip.
+
+```
+cd Subscription-Manager
+```
+
 ```
 pip install -r requirements.txt
 ```
