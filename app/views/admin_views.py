@@ -1,5 +1,5 @@
 """Admin views for the application."""
-
+from urllib.parse import quote
 from flask_admin.contrib.sqla.fields import QuerySelectMultipleField
 from flask_admin.form import Select2Widget
 from markupsafe import Markup
@@ -83,7 +83,8 @@ class SubscriptionView(SecureModelView):
         # Generate merged subscription URL
         subconverter_api = Settings.query.filter_by(key='subconverter_api').first().value
         base_url = Settings.query.filter_by(key='base_url').first().value
-        urls_to_merge_str = "|".join(urls_to_merge)
+        urls_to_merge_str = quote("|".join(urls_to_merge))
+        #urls_to_merge_str = "|".join(urls_to_merge)
         target_url = f"{subconverter_api}?target=clash&url={urls_to_merge_str}"
 
         # Create a friendly URL path
