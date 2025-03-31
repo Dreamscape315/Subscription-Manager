@@ -45,7 +45,7 @@ python run.py
 ### Docker
 
 ```
-docker pull dreamscape315419/subscription-manager:v1.0
+docker pull dreamscape315419/subscription-manager:v1.1
 ```
 ```
 docker run -d --name subscription-manager -p 5000:5000 dreamscape315419/subscription-manager
