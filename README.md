@@ -24,7 +24,7 @@ A modern multi-user proxy subscription management system that supports multiple 
 ### Method 1: Docker Deployment (Recommended)
 
 ```bash
-# Pull the latest image
+
 docker pull dreamscape315419/subscription-manager:latest
 ```
 ```

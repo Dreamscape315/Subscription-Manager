@@ -25,7 +25,7 @@
 ### 方式一：Docker部署（推荐）
 
 ```bash
-# 拉取最新镜像
+
 docker pull dreamscape315419/subscription-manager:latest
 
 ```
