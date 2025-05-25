@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Create Composite Subscription - Subscription Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-layers-half"></i> Create Composite Subscription
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if original_subs %}
+                <form method="POST" id="compositeForm">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Composite Subscription Name" required>
+                        <label for="name">Composite Subscription Name *</label>
+                        <div class="form-text">Give this composite subscription an easily recognizable name</div>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <textarea class="form-control" id="description" name="description" placeholder="Description" style="height: 100px"></textarea>
+                        <label for="description">Description (Optional)</label>
+                        <div class="form-text">Briefly describe the purpose of this composite subscription</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Target Format *</label>
+                        <select class="form-select" name="target_type" required>
+                            <option value="">Please select target format</option>
+                            <option value="clash">Clash</option>
+                            <option value="v2ray">V2Ray</option>
+                            <option value="surge">Surge</option>
+                            <option value="quan">Quan X</option>
+                            <option value="surfboard">Surfboard</option>
+                            <option value="ss">Shadowsocks</option>
+                            <option value="ssr">ShadowsocksR</option>
+                        </select>
+                        <div class="form-text">Select the configuration format supported by your client</div>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="config_template" name="config_template" placeholder="Configuration Template">
+                        <label for="config_template">Configuration Template (Optional)</label>
+                        <div class="form-text">Custom configuration template URL, leave blank to use default configuration</div>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="custom_url" name="custom_url" placeholder="Custom URL" pattern="[a-zA-Z0-9_-]+">
+                        <label for="custom_url">Custom URL (Optional)</label>
+                        <div class="form-text">
+                            Custom friendly URL, e.g.: my-subscription, leave blank to auto-generate random URL<br>
+                            Can only contain letters, numbers, underscores and hyphens
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">Preview link:</small>
+                            <div class="friendly-url-preview">
+                                <code id="url-preview">{{ request.host_url }}sub/[will be auto-generated based on input]</code>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Select Original Subscriptions to Merge *</label>
+                        <div class="form-text mb-3">Select at least one original subscription to merge</div>
+                        
+                        <div class="mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+                                <label class="form-check-label fw-bold" for="selectAll">
+                                    Select All / Deselect All
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                            {% for sub in original_subs %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="selected_subscriptions" 
+                                       value="{{ sub.id }}" id="sub_{{ sub.id }}" onchange="checkSelectedSubscriptions()">
+                                <label class="form-check-label" for="sub_{{ sub.id }}">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong>{{ sub.name }}</strong>
+                                            {% if sub.description %}
+                                            <br><small class="text-muted">{{ sub.description }}</small>
+                                            {% endif %}
+                                        </div>
+                                        <small class="text-muted">{{ sub.created_at.strftime('%m-%d') }}</small>
+                                    </div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('composite_subscriptions') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back
+                        </a>
+                        <button type="submit" class="btn btn-success" id="submitBtn" disabled>
+                            <i class="bi bi-check-circle"></i> Create Composite Subscription
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <!-- No original subscriptions prompt -->
+                <div class="text-center py-4">
+                    <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">Cannot Create Composite Subscription</h5>
+                    <p class="text-muted mb-4">You need to add at least one original subscription before creating a composite subscription</p>
+                    <a href="{{ url_for('add_original_subscription') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Add Original Subscription
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Usage Instructions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Usage Instructions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Supported Target Formats:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success"></i> <strong>Clash</strong> - For Clash series clients</li>
+                            <li><i class="bi bi-check-circle text-success"></i> <strong>V2Ray</strong> - For V2Ray clients</li>
+                            <li><i class="bi bi-check-circle text-success"></i> <strong>Surge</strong> - For Surge clients</li>
+                            <li><i class="bi bi-check-circle text-success"></i> <strong>Quan X</strong> - For Quan X clients</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Important Notes:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-exclamation-triangle text-warning"></i> Select format that matches your client</li>
+                            <li><i class="bi bi-exclamation-triangle text-warning"></i> Generated links can be used directly in clients</li>
+                            <li><i class="bi bi-exclamation-triangle text-warning"></i> Configurations update automatically, no need to reconfigure</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('compositeForm').addEventListener('submit', function(e) {
+    if (!validateForm('compositeForm')) {
+        e.preventDefault();
+        return;
+    }
+    
+    const selectedSubs = document.querySelectorAll('input[name="selected_subscriptions"]:checked');
+    if (selectedSubs.length === 0) {
+        e.preventDefault();
+        alert('Please select at least one original subscription');
+        return;
+    }
+});
+
+function checkSelectedSubscriptions() {
+    const checkboxes = document.querySelectorAll('input[name="selected_subscriptions"]:checked');
+    const submitButton = document.getElementById('submitBtn');
+    
+    if (submitButton) {
+        submitButton.disabled = checkboxes.length === 0;
+    }
+    
+    // Update select all state
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const allCheckboxes = document.querySelectorAll('input[name="selected_subscriptions"]');
+    
+    if (checkboxes.length === allCheckboxes.length) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    } else if (checkboxes.length === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+    }
+}
+
+// Initialize check
+document.addEventListener('DOMContentLoaded', function() {
+    checkSelectedSubscriptions();
+    
+    // Add event listeners to all checkboxes
+    document.querySelectorAll('input[name="selected_subscriptions"]').forEach(checkbox => {
+        checkbox.addEventListener('change', checkSelectedSubscriptions);
+    });
+    
+    // Custom URL real-time preview
+    const customUrlInput = document.getElementById('custom_url');
+    const urlPreview = document.getElementById('url-preview');
+    const baseUrl = '{{ request.host_url }}sub/';
+    
+    if (customUrlInput && urlPreview) {
+        customUrlInput.addEventListener('input', function() {
+            const customUrl = this.value.trim();
+            if (customUrl) {
+                // Validate format
+                if (/^[a-zA-Z0-9_-]+$/.test(customUrl)) {
+                    urlPreview.textContent = baseUrl + customUrl;
+                    urlPreview.className = 'text-success';
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    urlPreview.textContent = baseUrl + '[invalid format]';
+                    urlPreview.className = 'text-danger';
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                }
+            } else {
+                urlPreview.textContent = baseUrl + '[will be auto-generated random URL]';
+                urlPreview.className = 'text-muted';
+                this.classList.remove('is-invalid', 'is-valid');
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

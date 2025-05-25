@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Original Subscriptions - Subscription Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-list-ul"></i> Original Subscription Management</h2>
+    <a href="{{ url_for('add_original_subscription') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Add Subscription
+    </a>
+</div>
+
+{% if subscriptions %}
+<div class="row">
+    {% for subscription in subscriptions %}
+    <div class="col-lg-6 mb-4">
+        <div class="card subscription-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ subscription.name }}</h5>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-three-dots"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('edit_original_subscription', id=subscription.id) }}">
+                                <i class="bi bi-pencil"></i> Edit
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="POST" action="{{ url_for('delete_original_subscription', id=subscription.id) }}" class="d-inline">
+                                <button type="submit" class="dropdown-item text-danger btn-delete">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if subscription.description %}
+                <p class="card-text text-muted mb-3">{{ subscription.description }}</p>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Subscription URL:</label>
+                    <div class="subscription-url">{{ subscription.url }}</div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="bi bi-calendar"></i> {{ subscription.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </small>
+                    <button class="btn btn-sm btn-outline-secondary btn-copy" data-copy="{{ subscription.url }}">
+                        <i class="bi bi-clipboard"></i> Copy URL
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if subscriptions|length > 10 %}
+<nav aria-label="Subscription pagination">
+    <ul class="pagination justify-content-center">
+        <li class="page-item disabled">
+            <span class="page-link">Previous</span>
+        </li>
+        <li class="page-item active">
+            <span class="page-link">1</span>
+        </li>
+        <li class="page-item disabled">
+            <span class="page-link">Next</span>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<!-- Empty State -->
+<div class="text-center py-5">
+    <i class="bi bi-inbox" style="font-size: 4rem; color: #dee2e6;"></i>
+    <h4 class="mt-3 text-muted">No original subscriptions yet</h4>
+    <p class="text-muted mb-4">Add your first subscription source to get started</p>
+    <a href="{{ url_for('add_original_subscription') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-plus-circle"></i> Add First Subscription
+    </a>
+</div>
+{% endif %}
+{% endblock %} 

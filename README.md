@@ -1,62 +1,112 @@
-# Subscription Manager
+# Subscription Management System
 
-## Description
+[中文版本](README_CN.md) | English
 
-This subscription management system allows you to organize original subscriptions while
-leveraging the Subconverter backend and its built-in rule sets to merge multiple sources
-into new, optimized subscription links with permanent URLs. Simplify your subscription management
-workflow by transforming scattered proxy resources into coherent, customized configurations with
-just a few clicks.
+A modern multi-user proxy subscription management system that supports multiple client format conversions and permanent link generation, using Subconverter as backend.
 
-## Features
+## 🌟 Key Features
 
-- **Subscription Management**: Easily manage and organize your subscriptions.
-- **Subscription Conversion**: Convert your subscriptions by subconverter backend.
-- **Generate Permanent URLs**: Create permanent URLs for your subscriptions.
+### 📋 Core Functions
+- **Original Subscription Management** - Add, edit, delete original subscription sources
+- **Composite Subscription Generation** - Select multiple original subscriptions for merging
+- **Multi-format Conversion** - Support Clash, V2Ray, Surge, Quan X and other formats
+- **Permanent Links** - Generate friendly permanent URLs that clients can use directly
+- **Multi-user Support** - Each user independently manages their own subscriptions
 
+## 🚀 Quick Start
 
+### Requirements
+- Python 3.7+
+- pip
 
-## Requirements
+### Installation Steps
 
-- **Python 3.9**: Ensure you have Python 3.9 or higher installed on your system.
-
-## Usage
-
-### Cloning the Repository
-
-1. **Clone the Repository**: Clone this repository to your local machine using Git.
-```
-git clone https://github.com/Dreamscape315/Subscription-Manager.git
-```
-2. **Install Dependencies**: Navigate to the project directory and install the required dependencies using pip.
-
-```
-cd Subscription-Manager
+1. **Clone the project**
+```bash
+git clone <repository-url>
+cd NewSub
 ```
 
-```
+2. **Install dependencies**
+```bash
 pip install -r requirements.txt
 ```
-3. **Run the Application**: After installing the dependencies, you can run the application using the following command:
-```
+
+3. **Run the application**
+```bash
 python run.py
 ```
 
-### Docker
+4. **Access the application**
+Open browser and visit: http://localhost:5000
 
+### First Use
+
+1. Register the first user (automatically becomes admin)
+2. Add original subscription sources
+3. Create composite subscriptions, choose custom URL, select custom rule configuration
+4. Copy the generated permanent links for use in clients
+
+## ⚙️ System Settings
+
+Administrators can configure the following settings:
+
+- **Subconverter API Address** - Used for converting subscription formats
+- **Application Base URL** - Used for generating permanent links
+
+## 🛠️ Deployment
+
+### Docker Deployment (Recommended)
+
+```bash
+# Quick start with Docker Compose
+docker-compose up -d
+
+# Or build manually
+docker build -t subscription-manager .
+docker run -d -p 5000:5000 -v ./instance:/app/instance subscription-manager
 ```
-docker pull dreamscape315419/subscription-manager:v1.1
+
+### Linux Screen Deployment
+
+```bash
+# Use installation script
+chmod +x install_and_run.sh
+./install_and_run.sh
+
+# Or manual setup
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+screen -S subscription-manager
+python3 run.py
+# Press Ctrl+A+D to detach from screen
 ```
-```
-docker run -d --name subscription-manager -p 5000:5000 dreamscape315419/subscription-manager
-```
 
-## Note
+## 📄 License
 
-1. **The target of subconverter in this project is default as 'clash', other targets are not supported yet.**
-2. **When your base URL is not HTTPS, you are unable to use copy link button.**
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
 
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+## 🆘 FAQ
 
-Powered by Flask-Admin, Subconverter, and Flask.
+### Q: How to change Subconverter API?
+A: Admin login, go to "System Settings" page to modify API address.
+
+### Q: Forgot admin password?
+A: Delete database file and reinitialize, the first registered user will automatically become admin.
+
+### Q: Does it support custom configuration templates?
+A: Yes, you can specify custom configuration template URL when creating composite subscriptions.
+
+### Q: How to backup data?
+A: Backup the `instance/subscription_manager.db` file.
+
+### Q: How to create admin accounts?
+A: The first registered user automatically becomes admin, or existing admins can create them directly.
+
+### Q: Can admins see users' subscription configurations?
+A: No. The system architecturally limits admin permissions. Admins can only manage user accounts and cannot view any user's subscription URLs or configuration content.
+
+---
+
+**Enjoy convenient subscription management!** 🎉 

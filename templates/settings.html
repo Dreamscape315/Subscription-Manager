@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings - Subscription Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-gear"></i> System Settings
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('update_settings') }}" id="settingsForm">
+                    <div class="form-floating mb-3">
+                        <input type="url" class="form-control" id="subconverter_url" name="subconverter_url" 
+                               placeholder="Subconverter API Address" 
+                               value="{{ settings.get('subconverter_url', 'https://api.subconverter.com/sub') }}" required>
+                        <label for="subconverter_url">Subconverter API Address *</label>
+                        <div class="form-text">API address for converting subscription formats</div>
+                    </div>
+                    
+                                         <div class="form-floating mb-3">
+                         <input type="url" class="form-control" id="base_url" name="base_url" 
+                                placeholder="Application Base URL" 
+                                value="{{ settings.get('base_url', 'http://localhost:5000') }}" required>
+                         <label for="base_url">Application Base URL *</label>
+                         <div class="form-text">Access address of this application, used to generate permanent links</div>
+                     </div>
+                     
+
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Settings Instructions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Settings Instructions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Subconverter API:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success"></i> Official API: https://api.subconverter.com/sub</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Self-hosted API: Requires deploying Subconverter service</li>
+                            <li><i class="bi bi-exclamation-triangle text-warning"></i> Ensure API address is accessible</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Application Base URL:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success"></i> Local development: http://localhost:5000</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Production environment: https://yourdomain.com</li>
+                            <li><i class="bi bi-exclamation-triangle text-warning"></i> Affects permanent link generation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Information -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-square"></i> System Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>System Version:</strong> v1.0.0</p>
+                        <p><strong>Python Version:</strong> {{ python_version }}</p>
+                        <p><strong>Flask Version:</strong> {{ flask_version }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Database:</strong> SQLite</p>
+                        <p><strong>Current Time:</strong> <span id="current-time"></span></p>
+                        <p><strong>Running Status:</strong> <span class="badge bg-success">Normal</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('settingsForm').addEventListener('submit', function(e) {
+    if (!validateForm('settingsForm')) {
+        e.preventDefault();
+    }
+});
+
+// Real-time display of current time
+function updateTime() {
+    const now = new Date();
+    document.getElementById('current-time').textContent = now.toLocaleString('en-US');
+}
+
+updateTime();
+setInterval(updateTime, 1000);
+
+// URL validation
+document.querySelectorAll('input[type="url"]').forEach(input => {
+    input.addEventListener('blur', function() {
+        const url = this.value;
+        if (url && !validateUrl(url)) {
+            this.classList.add('is-invalid');
+            this.setCustomValidity('Please enter a valid URL');
+        } else {
+            this.classList.remove('is-invalid');
+            this.setCustomValidity('');
+        }
+    });
+});
+</script>
+{% endblock %} 

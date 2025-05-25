@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}User Settings - Subscription Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-person-gear"></i> User Settings
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="userSettingsForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="username" name="username" 
+                                       placeholder="Username" value="{{ current_user.username }}" required>
+                                <label for="username">Username *</label>
+                                <div class="form-text">Username can only contain letters, numbers and underscores</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="Email" value="{{ current_user.email or '' }}">
+                                <label for="email">Email Address (Optional)</label>
+                                <div class="form-text">Email address is optional</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="password" class="form-control" id="current_password" name="current_password" 
+                                       placeholder="Current Password">
+                                <label for="current_password">Current Password</label>
+                                <div class="form-text">Current password is required when changing password</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="password" class="form-control" id="new_password" name="new_password" 
+                                       placeholder="New Password" minlength="6">
+                                <label for="new_password">New Password (Optional)</label>
+                                <div class="form-text">Leave blank to keep current password</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Login Remember Settings -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-shield-check"></i> Login Remember Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Current Remember Status</h6>
+                        <p id="rememberStatus" class="text-muted">Checking...</p>
+                        
+                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="clearRememberedData()">
+                            <i class="bi bi-trash"></i> Clear Remembered Username
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Security Tips</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-info-circle text-info"></i> Remember function saves username locally</li>
+                            <li><i class="bi bi-shield-check text-success"></i> Password is never saved</li>
+                            <li><i class="bi bi-exclamation-triangle text-warning"></i> Do not use remember function on public devices</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Account Information -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Account Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>User ID:</strong> {{ current_user.id }}</p>
+                        <p><strong>Registration Time:</strong> {{ current_user.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        <p><strong>User Type:</strong> 
+                            {% if current_user.is_admin %}
+                                <span class="badge bg-danger">Administrator</span>
+                            {% else %}
+                                <span class="badge bg-primary">Regular User</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Original Subscriptions:</strong> {{ current_user.original_subscriptions|length }} items</p>
+                        <p><strong>Composite Subscriptions:</strong> {{ current_user.composite_subscriptions|length }} items</p>
+                        <p><strong>Status:</strong> <span class="badge bg-success">Active</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Check remember status
+document.addEventListener('DOMContentLoaded', function() {
+    const savedUsername = localStorage.getItem('rememberedUsername');
+    const statusElement = document.getElementById('rememberStatus');
+    
+    if (savedUsername) {
+        statusElement.innerHTML = `<i class="bi bi-check-circle text-success"></i> Remembered username: <strong>${savedUsername}</strong>`;
+    } else {
+        statusElement.innerHTML = `<i class="bi bi-x-circle text-muted"></i> No username remembered`;
+    }
+});
+
+// Clear remembered data
+function clearRememberedData() {
+    if (confirm('Are you sure you want to clear the remembered username information?')) {
+        localStorage.removeItem('rememberedUsername');
+        document.getElementById('rememberStatus').innerHTML = `<i class="bi bi-check-circle text-success"></i> Remembered information has been cleared`;
+        
+        // Show success notification
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show mt-3';
+        alert.innerHTML = `
+            <i class="bi bi-check-circle"></i> Remembered username information has been successfully cleared
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.card-body').appendChild(alert);
+        
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.remove();
+            }
+            // Update status display
+            document.getElementById('rememberStatus').innerHTML = `<i class="bi bi-x-circle text-muted"></i> No username remembered`;
+        }, 2000);
+    }
+}
+
+// Form validation
+document.getElementById('userSettingsForm').addEventListener('submit', function(e) {
+    const currentPassword = document.getElementById('current_password').value;
+    const newPassword = document.getElementById('new_password').value;
+    
+    // Current password is required when changing password
+    if (newPassword && !currentPassword) {
+        e.preventDefault();
+        alert('Current password is required when changing password');
+        return;
+    }
+    
+    if (!validateForm('userSettingsForm')) {
+        e.preventDefault();
+    }
+});
+
+// Username validation
+document.getElementById('username').addEventListener('input', function() {
+    const username = this.value;
+    const regex = /^[a-zA-Z0-9_]+$/;
+    
+    if (username && !regex.test(username)) {
+        this.classList.add('is-invalid');
+        this.setCustomValidity('Username can only contain letters, numbers and underscores');
+    } else {
+        this.classList.remove('is-invalid');
+        this.setCustomValidity('');
+    }
+});
+</script>
+{% endblock %} 

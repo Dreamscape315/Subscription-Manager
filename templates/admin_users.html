@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - Subscription Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-people"></i> User Management</h2>
+    <div class="d-flex align-items-center gap-3">
+        <a href="{{ url_for('admin_create_user') }}" class="btn btn-success">
+            <i class="bi bi-person-plus"></i> Create User
+        </a>
+        <div class="text-muted">
+            Total {{ users|length }} users
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info mb-4">
+    <i class="bi bi-shield-check"></i> 
+    <strong>Permission Notice:</strong> Administrator permissions are limited to user account management and cannot access users' subscription configuration content.
+    <a href="{{ url_for('privacy_policy') }}" class="alert-link">View detailed permission instructions</a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0">User List</h5>
+            </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search users..." onkeyup="searchTable(this, 'usersTable')">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="usersTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Registration Time</th>
+                        <th>Data Status</th>
+                        <th>Last Activity</th>
+                        <th class="table-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-person-circle me-2 text-muted"></i>
+                                <strong>{{ user.username }}</strong>
+                            </div>
+                        </td>
+                        <td>{{ user.email or '<span class="text-muted">Not set</span>' | safe }}</td>
+                        <td>
+                            {% if user.is_admin %}
+                                <span class="badge bg-danger">Administrator</span>
+                            {% else %}
+                                <span class="badge bg-primary">Regular User</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {{ user.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            </small>
+                        </td>
+                        <td>
+                            {% if user.original_subscriptions|length > 0 or user.composite_subscriptions|length > 0 %}
+                                <span class="badge bg-success">Has Data</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No Data</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {% if user.id == current_user.id %}
+                                    Currently Online
+                                {% else %}
+                                    Privacy Protected
+                                {% endif %}
+                            </small>
+                        </td>
+                        <td class="table-actions">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('admin_edit_user', user_id=user.id) }}" class="btn btn-outline-primary" title="Edit User">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% if user.id != current_user.id %}
+                                <form method="POST" action="{{ url_for('admin_delete_user', user_id=user.id) }}" style="display: inline;" onsubmit="return confirmDeleteUser('{{ user.username }}')">
+                                    <button type="submit" class="btn btn-outline-danger" title="Delete User">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Statistics -->
+<div class="row mt-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-primary">{{ users|length }}</h3>
+                <p class="text-muted mb-0">Total Users</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-danger">{{ admin_count }}</h3>
+                <p class="text-muted mb-0">Administrators</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-info">
+                    {% set active_users = namespace(count=0) %}
+                    {% for user in users %}
+                        {% if user.original_subscriptions|length > 0 or user.composite_subscriptions|length > 0 %}
+                            {% set active_users.count = active_users.count + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ active_users.count }}
+                </h3>
+                <p class="text-muted mb-0">Active Users</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-success">
+                    <i class="bi bi-shield-check"></i>
+                </h3>
+                <p class="text-muted mb-0">Privacy Protected</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmDeleteUser(username) {
+    return confirm(`Are you sure you want to delete user "${username}"?\n\nThis operation will also delete all subscription data for this user and cannot be undone!`);
+}
+
+// Table sorting functionality
+function sortTable(columnIndex) {
+    const table = document.getElementById('usersTable');
+    const tbody = table.getElementsByTagName('tbody')[0];
+    const rows = Array.from(tbody.getElementsByTagName('tr'));
+    
+    rows.sort((a, b) => {
+        const aText = a.getElementsByTagName('td')[columnIndex].textContent.trim();
+        const bText = b.getElementsByTagName('td')[columnIndex].textContent.trim();
+        return aText.localeCompare(bText);
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Subscription Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+    <div class="text-muted">
+        Welcome back, {{ current_user.username }}!
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card stats-card">
+            <div class="card-body text-center">
+                <div class="stats-number">{{ original_subs|length }}</div>
+                <div class="stats-label">Original Subscriptions</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card stats-card">
+            <div class="card-body text-center">
+                <div class="stats-number">{{ composite_subs|length }}</div>
+                <div class="stats-label">Composite Subscriptions</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <a href="{{ url_for('add_original_subscription') }}" class="btn btn-primary w-100">
+                            <i class="bi bi-plus-circle"></i> Add Original Subscription
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <a href="{{ url_for('add_composite_subscription') }}" class="btn btn-success w-100">
+                            <i class="bi bi-layers-half"></i> Create Composite Subscription
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Subscriptions -->
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-list-ul"></i> Recent Original Subscriptions</h5>
+                <a href="{{ url_for('original_subscriptions') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if original_subs %}
+                    {% for sub in original_subs[:3] %}
+                    <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                        <div>
+                            <h6 class="mb-1">{{ sub.name }}</h6>
+                            <small class="text-muted">{{ sub.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        <button class="btn btn-sm btn-outline-secondary btn-copy" data-copy="{{ sub.url }}">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                        <p class="mt-2">No original subscriptions yet</p>
+                        <a href="{{ url_for('add_original_subscription') }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus"></i> Add the first one
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-layers"></i> Recent Composite Subscriptions</h5>
+                <a href="{{ url_for('composite_subscriptions') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if composite_subs %}
+                    {% for sub in composite_subs[:3] %}
+                    <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                        <div>
+                            <h6 class="mb-1">{{ sub.name }}</h6>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-primary target-type-badge me-2">{{ sub.target_type }}</span>
+                                <small class="text-muted">{{ sub.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-secondary btn-copy" 
+                                data-copy="{{ request.host_url }}sub/{{ sub.friendly_url }}">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                        <p class="mt-2">No composite subscriptions yet</p>
+                        <a href="{{ url_for('add_composite_subscription') }}" class="btn btn-success btn-sm">
+                            <i class="bi bi-plus"></i> Create the first one
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Usage Tips -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Usage Tips</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-1-circle text-primary" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6>Add Original Subscriptions</h6>
+                                <p class="text-muted small mb-0">First add the subscription links provided by your proxy service providers</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-2-circle text-primary" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6>Create Composite Subscriptions</h6>
+                                <p class="text-muted small mb-0">Select multiple original subscriptions to merge and choose target format</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-3-circle text-primary" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6>Use Permanent Links</h6>
+                                <p class="text-muted small mb-0">Copy the generated links and use them in your clients</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

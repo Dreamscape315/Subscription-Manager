@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Edit User - Subscription Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-person-gear"></i> Edit User: {{ user.username }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="editUserForm">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="username" name="username" 
+                               placeholder="Username" value="{{ user.username }}" required>
+                        <label for="username">Username *</label>
+                        <div class="form-text">Username can only contain letters, numbers and underscores</div>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="email" class="form-control" id="email" name="email" 
+                               placeholder="Email" value="{{ user.email or '' }}">
+                        <label for="email">Email Address (Optional)</label>
+                        <div class="form-text">Email address is optional, can be used for password recovery</div>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="New Password (leave blank to keep current)" minlength="6">
+                        <label for="password">New Password (Optional)</label>
+                        <div class="form-text">Leave blank to keep current password, if changing please enter at least 6 characters</div>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                               placeholder="Confirm New Password">
+                        <label for="confirm_password">Confirm New Password</label>
+                    </div>
+                    
+                    {% if user.id != current_user.id %}
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="is_admin" name="is_admin" 
+                               {% if user.is_admin %}checked{% endif %}>
+                        <label class="form-check-label" for="is_admin">
+                            <i class="bi bi-shield-check"></i> Administrator Privileges
+                        </label>
+                        <div class="form-text">Administrators can manage system settings and all users</div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Cannot modify your own administrator privileges
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to User Management
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- User Information -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> User Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>User ID:</strong> {{ user.id }}</p>
+                        <p><strong>Registration Time:</strong> {{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        <p><strong>User Type:</strong> 
+                            {% if user.is_admin %}
+                                <span class="badge bg-danger">Administrator</span>
+                            {% else %}
+                                <span class="badge bg-primary">Regular User</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Subscription Data:</strong> <span class="text-muted">Privacy Protected</span></p>
+                        <p><strong>Status:</strong> <span class="badge bg-success">Active</span></p>
+                        <p><strong>Permissions:</strong> 
+                            {% if user.is_admin %}
+                                <span class="text-warning">System Management</span>
+                            {% else %}
+                                <span class="text-info">Subscription Management</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Edit Instructions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Edit Instructions</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li><i class="bi bi-check-circle text-success"></i> Username must be unique, email if provided must be unique</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Leave password blank to keep current password</li>
+                    <li><i class="bi bi-exclamation-triangle text-warning"></i> Cannot modify your own administrator privileges</li>
+                    <li><i class="bi bi-exclamation-triangle text-warning"></i> Deleting user will also delete all their subscription data</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('editUserForm').addEventListener('submit', function(e) {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    
+    // Password confirmation is required if password is entered
+    if (password && password !== confirmPassword) {
+        e.preventDefault();
+        alert('The two passwords entered do not match');
+        return;
+    }
+    
+    if (!validateForm('editUserForm')) {
+        e.preventDefault();
+    }
+});
+
+// Real-time password confirmation validation
+document.getElementById('confirm_password').addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = this.value;
+    
+    if (password && confirmPassword && password !== confirmPassword) {
+        this.classList.add('is-invalid');
+        this.setCustomValidity('Passwords do not match');
+    } else {
+        this.classList.remove('is-invalid');
+        this.setCustomValidity('');
+    }
+});
+
+// Auto-clear confirmation password when password is changed
+document.getElementById('password').addEventListener('input', function() {
+    const confirmPassword = document.getElementById('confirm_password');
+    if (confirmPassword.value) {
+        confirmPassword.value = '';
+        confirmPassword.classList.remove('is-invalid');
+        confirmPassword.setCustomValidity('');
+    }
+});
+
+// Username validation
+document.getElementById('username').addEventListener('input', function() {
+    const username = this.value;
+    const regex = /^[a-zA-Z0-9_]+$/;
+    
+    if (username && !regex.test(username)) {
+        this.classList.add('is-invalid');
+        this.setCustomValidity('Username can only contain letters, numbers and underscores');
+    } else {
+        this.classList.remove('is-invalid');
+        this.setCustomValidity('');
+    }
+});
+</script>
+{% endblock %} 

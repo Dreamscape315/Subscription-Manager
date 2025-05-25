@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Subscription Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-box-arrow-in-right" style="font-size: 3rem; color: #667eea;"></i>
+                    <h3 class="mt-3">User Login</h3>
+                    <p class="text-muted">Login to your account to manage subscriptions</p>
+                </div>
+                
+                <form method="POST" id="loginForm">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+                        <label for="username">Username</label>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                        <label for="password">Password</label>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="remember_me" name="remember_me">
+                        <label class="form-check-label" for="remember_me">
+                            <i class="bi bi-check-circle"></i> Remember me
+                        </label>
+                        <div class="form-text">Stay logged in, no need to login again next time</div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <p class="text-muted">Don't have an account yet?</p>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-person-plus"></i> Register Now
+                    </a>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <button type="button" class="btn btn-link btn-sm text-muted" onclick="clearRememberedInfo()">
+                        <i class="bi bi-trash"></i> Clear remembered information
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Restore saved username on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedUsername = localStorage.getItem('rememberedUsername');
+    const rememberCheckbox = document.getElementById('remember_me');
+    const usernameInput = document.getElementById('username');
+    
+    if (savedUsername) {
+        usernameInput.value = savedUsername;
+        rememberCheckbox.checked = true;
+    }
+});
+
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    if (!validateForm('loginForm')) {
+        e.preventDefault();
+        return;
+    }
+    
+    const username = document.getElementById('username').value;
+    const rememberMe = document.getElementById('remember_me').checked;
+    
+    // Save or clear username
+    if (rememberMe) {
+        localStorage.setItem('rememberedUsername', username);
+    } else {
+        localStorage.removeItem('rememberedUsername');
+    }
+});
+
+// Handle remember me option changes
+document.getElementById('remember_me').addEventListener('change', function() {
+    if (!this.checked) {
+        localStorage.removeItem('rememberedUsername');
+    }
+});
+
+// Auto-check remember me when username is entered
+document.getElementById('username').addEventListener('input', function() {
+    const savedUsername = localStorage.getItem('rememberedUsername');
+    if (savedUsername && this.value === savedUsername) {
+        document.getElementById('remember_me').checked = true;
+    }
+});
+
+// Clear remembered information
+function clearRememberedInfo() {
+    if (confirm('Are you sure you want to clear the remembered username information?')) {
+        localStorage.removeItem('rememberedUsername');
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('remember_me').checked = false;
+        
+        // Show notification
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-info alert-dismissible fade show mt-3';
+        alert.innerHTML = `
+            <i class="bi bi-info-circle"></i> Remembered username information has been cleared
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.card-body').appendChild(alert);
+        
+        // Auto-hide after 3 seconds
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.remove();
+            }
+        }, 3000);
+    }
+}
+</script>
+{% endblock %} 

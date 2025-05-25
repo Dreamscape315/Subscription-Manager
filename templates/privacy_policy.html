@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - Subscription Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 
+                    <strong>Data Protection Mechanism</strong> - The system protects user subscription configurations and personal data through permission control and data isolation.
+                </div>
+                
+                <h5><i class="bi bi-lock"></i> Data Protection Measures</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>User Data Isolation</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success"></i> Each user can only access their own subscription data</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Administrators cannot view users' subscription configuration content</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Data access is restricted through permission control</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Administrator Permission Restrictions</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success"></i> Administrators can only manage user account information</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Cannot view specific subscription URLs and configurations</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Subscription data is displayed as "Privacy Protected" status</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h5><i class="bi bi-person-check"></i> Administrator Operation Permissions</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-success">✅ Allowed Operations</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check text-success"></i> Create new user accounts</li>
+                            <li><i class="bi bi-check text-success"></i> Edit user basic information (username, email)</li>
+                            <li><i class="bi bi-check text-success"></i> Reset user passwords</li>
+                            <li><i class="bi bi-check text-success"></i> Set user permissions (administrator/regular user)</li>
+                            <li><i class="bi bi-check text-success"></i> Delete user accounts</li>
+                            <li><i class="bi bi-check text-success"></i> View user count statistics</li>
+                            <li><i class="bi bi-check text-success"></i> Manage system settings</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-danger">❌ Prohibited Operations</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-x text-danger"></i> View users' subscription URLs</li>
+                            <li><i class="bi bi-x text-danger"></i> Access users' subscription configurations</li>
+                            <li><i class="bi bi-x text-danger"></i> Edit users' subscription content</li>
+                            <li><i class="bi bi-x text-danger"></i> View users' subscription history</li>
+                            <li><i class="bi bi-x text-danger"></i> Export users' subscription data</li>
+                            <li><i class="bi bi-x text-danger"></i> View users' activity details</li>
+                        </ul>
+                    </div>
+                </div>
+                
+
+
+                
+                <div class="alert alert-success mt-4">
+                    <i class="bi bi-shield-check"></i> 
+                    <strong>Design Principle:</strong> The system is designed with data isolation in mind and will not view, collect, or share users' subscription configuration data.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

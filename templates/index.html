@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Subscription Management System{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">
+            <i class="bi bi-cloud-arrow-down"></i> Subscription Management System
+        </h1>
+        <p class="lead mb-4">
+            Easily manage your proxy subscriptions, support multiple client format conversions, and generate permanent links with one click
+        </p>
+        {% if not current_user.is_authenticated %}
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
+                <i class="bi bi-person-plus"></i> Register Now
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+        </div>
+        {% else %}
+        <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
+            <i class="bi bi-speedometer2"></i> Go to Dashboard
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="feature-icon">
+                        <i class="bi bi-list-ul"></i>
+                    </div>
+                    <h5 class="card-title">Original Subscription Management</h5>
+                    <p class="card-text">
+                        Add, edit and manage your original subscription sources, support one-click URL copying, easily import various proxy services
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="feature-icon">
+                        <i class="bi bi-layers"></i>
+                    </div>
+                    <h5 class="card-title">Composite Subscription Generation</h5>
+                    <p class="card-text">
+                        Select multiple original subscriptions for merging, support format conversion for Clash, V2Ray, Surge and more
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="feature-icon">
+                        <i class="bi bi-link-45deg"></i>
+                    </div>
+                    <h5 class="card-title">Permanent Links</h5>
+                    <p class="card-text">
+                        Generate friendly permanent URLs that clients can use directly, automatically call conversion API to get latest configurations
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-shield-check text-success"></i> Multi-User Support
+                    </h5>
+                    <p class="card-text">
+                        Each user independently manages their own subscriptions, supports user registration and login, administrators can manage all users
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-gear text-primary"></i> Flexible Configuration
+                    </h5>
+                    <p class="card-text">
+                        Support custom Subconverter API address, multiple conversion rule options to meet different needs
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if not current_user.is_authenticated %}
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <h3 class="mb-4">Get Started</h3>
+            <p class="lead mb-4">Register an account and start managing your subscriptions immediately</p>
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-person-plus"></i> Free Registration
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 
