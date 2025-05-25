@@ -23,7 +23,7 @@ A modern multi-user proxy subscription management system that supports multiple 
 
 1. **Clone the project**
 ```bash
-git clone <repository-url>
+git clone https://github.com/Dreamscape315/Subscription-Manager
 cd NewSub
 ```
 
