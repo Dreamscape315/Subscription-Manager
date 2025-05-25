@@ -6,9 +6,8 @@ from datetime import datetime
 import requests
 import os
 import uuid
-from urllib.parse import urlencode, urlparse
+from urllib.parse import urlencode
 import secrets
-import base64
 import logging
 from logging.handlers import RotatingFileHandler
 from collections import defaultdict
@@ -238,11 +237,7 @@ def add_original_subscription():
         description = request.form['description']
         url = request.form['url']
         
-        # Validate subscription URL
-        valid, message = validate_subscription_url(url)
-        if not valid:
-            flash(message, 'error')
-            return render_template('add_original_subscription.html')
+
         
         subscription = OriginalSubscription(
             name=name,
@@ -273,11 +268,7 @@ def edit_original_subscription(id):
         subscription.description = request.form['description']
         subscription.url = request.form['url']
         
-        # Validate subscription URL
-        valid, message = validate_subscription_url(subscription.url)
-        if not valid:
-            flash(message, 'error')
-            return render_template('edit_original_subscription.html', subscription=subscription)
+
         
         db.session.commit()
         flash('Subscription updated successfully!', 'success')
@@ -807,72 +798,9 @@ def check_deletion(id):
     
     return jsonify(result)
 
-def validate_subscription_url(url):
-    """
-    Validate subscription URL by checking if it's accessible and contains valid content
-    """
-    try:
-        # Parse URL to check format
-        parsed = urlparse(url)
-        if not parsed.scheme or not parsed.netloc:
-            return False, "Invalid URL format"
-        
-        # Try to fetch the URL with timeout
-        response = requests.get(url, timeout=10, headers={
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        })
-        
-        if response.status_code != 200:
-            return False, f"URL returned status code {response.status_code}"
-        
-        content = response.text.strip()
-        
-        # Check if content looks like a subscription (base64 encoded or contains proxy configs)
-        if not content:
-            return False, "URL returned empty content"
-        
-        # Try to decode as base64 (common for subscription links)
-        try:
-            decoded = base64.b64decode(content).decode('utf-8')
-            if any(keyword in decoded.lower() for keyword in ['vmess://', 'vless://', 'ss://', 'ssr://', 'trojan://', 'hysteria://']):
-                return True, "Valid subscription content detected"
-        except:
-            pass
-        
-        # Check for direct proxy protocol URLs
-        if any(protocol in content.lower() for protocol in ['vmess://', 'vless://', 'ss://', 'ssr://', 'trojan://', 'hysteria://']):
-            return True, "Valid proxy configuration detected"
-        
-        # Check for YAML/JSON config files (Clash format)
-        if any(keyword in content.lower() for keyword in ['proxies:', 'proxy-groups:', 'rules:']):
-            return True, "Valid Clash configuration detected"
-        
-        return False, "Content doesn't appear to be a valid subscription"
-        
-    except requests.exceptions.Timeout:
-        return False, "Request timeout - URL may be slow or unreachable"
-    except requests.exceptions.ConnectionError:
-        return False, "Connection error - URL may be unreachable"
-    except Exception as e:
-        return False, f"Validation error: {str(e)}"
 
-@app.route('/test-subscription/<int:id>')
-@login_required
-def test_subscription(id):
-    """Test if a subscription URL is working"""
-    subscription = OriginalSubscription.query.get_or_404(id)
-    
-    # Check permissions
-    if subscription.user_id != current_user.id:
-        abort(403)
-    
-    valid, message = validate_subscription_url(subscription.url)
-    
-    return jsonify({
-        'valid': valid,
-        'message': message,
-        'subscription_name': subscription.name
-    })
+
+
 
 @app.route('/test-composite/<int:id>')
 @login_required  
