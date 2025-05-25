@@ -13,18 +13,40 @@ A modern multi-user proxy subscription management system that supports multiple 
 - **Permanent Links** - Generate friendly permanent URLs that clients can use directly
 - **Multi-user Support** - Each user independently manages their own subscriptions
 
+### 🔒 Security Features
+- **User Isolation** - Each user can only access their own subscriptions
+- **Admin Management** - Administrators can manage users but cannot view subscription content
+- **Session Security** - Secure session management with configurable expiration
+- **Data Validation** - Comprehensive input validation and URL verification
+
 ## 🚀 Quick Start
 
-### Requirements
+### Method 1: Docker Deployment (Recommended)
+
+```bash
+# Pull the latest image
+docker pull dreamscape315419/subscription-manager:latest
+```
+```
+docker run -d \
+  --name subscription-manager \
+  -p 5000:5000 \
+  -v ./data:/app/instance \
+  dreamscape315419/subscription-manager:latest
+```
+
+### Method 2: Manual Installation
+
+#### Requirements
 - Python 3.7+
 - pip
 
-### Installation Steps
+#### Installation Steps
 
 1. **Clone the project**
 ```bash
-git clone https://github.com/Dreamscape315/Subscription-Manager
-cd NewSub
+git clone https://github.com/Dreamscape315/Subscription-Manager.git
+cd Subscription-Manager
 ```
 
 2. **Install dependencies**
@@ -34,7 +56,7 @@ pip install -r requirements.txt
 
 3. **Run the application**
 ```bash
-python run.py
+python app.py
 ```
 
 4. **Access the application**
@@ -43,69 +65,38 @@ Open browser and visit: http://localhost:5000
 ### First Use
 
 1. Register the first user (automatically becomes admin)
-2. Add original subscription sources
-3. Create composite subscriptions, choose custom URL, select custom rule configuration
-4. Copy the generated permanent links for use in clients
+2. Configure system settings (Subconverter API, Base URL)
+3. Add original subscription sources
+4. Create composite subscriptions with custom URLs
+5. Copy generated permanent links for use in clients
 
 ## ⚙️ System Settings
 
-Administrators can configure the following settings:
+Administrators can configure:
 
-- **Subconverter API Address** - Used for converting subscription formats
-- **Application Base URL** - Used for generating permanent links
-
-## 🛠️ Deployment
-
-### Docker Deployment (Recommended)
-
-```bash
-# Quick start with Docker Compose
-docker-compose up -d
-
-# Or build manually
-docker build -t subscription-manager .
-docker run -d -p 5000:5000 -v ./instance:/app/instance subscription-manager
-```
-
-### Linux Screen Deployment
-
-```bash
-# Use installation script
-chmod +x install_and_run.sh
-./install_and_run.sh
-
-# Or manual setup
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-screen -S subscription-manager
-python3 run.py
-# Press Ctrl+A+D to detach from screen
-```
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+- **Subconverter API Address** - For subscription format conversion
+- **Application Base URL** - For generating permanent links
+- **User Management** - Create, edit, delete user accounts
+- **System Information** - View Python/Flask versions and system status
 
 ## 🆘 FAQ
 
 ### Q: How to change Subconverter API?
 A: Admin login, go to "System Settings" page to modify API address.
 
-### Q: Forgot admin password?
-A: Delete database file and reinitialize, the first registered user will automatically become admin.
-
 ### Q: Does it support custom configuration templates?
 A: Yes, you can specify custom configuration template URL when creating composite subscriptions.
 
-### Q: How to backup data?
-A: Backup the `instance/subscription_manager.db` file.
-
-### Q: How to create admin accounts?
-A: The first registered user automatically becomes admin, or existing admins can create them directly.
-
 ### Q: Can admins see users' subscription configurations?
 A: No. The system architecturally limits admin permissions. Admins can only manage user accounts and cannot view any user's subscription URLs or configuration content.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
