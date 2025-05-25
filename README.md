@@ -1,8 +1,8 @@
 # Subscription Management System
 
-[中文版本](README_CN.md) | English
+[中文文档](README_CN.md) | English
 
-A modern multi-user proxy subscription management system that supports multiple client format conversions and permanent link generation, using Subconverter as backend.
+A modern multi-user proxy subscription management system that supports multiple client format conversions and permanent link generation, using [Subconverter](https://github.com/tindy2013/subconverter) as backend.
 
 ## 🌟 Key Features
 

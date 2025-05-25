@@ -1,8 +1,8 @@
 # 订阅管理系统
 
-[English](README.md) | 中文版本
+[English](README.md) | 中文文档
 
-一个现代化的多用户代理订阅管理系统，支持多种客户端格式转换和永久链接生成，采用Subconverter作为后端。
+一个现代化的多用户代理订阅管理系统，支持多种客户端格式转换和永久链接生成，采用[Subconverter](https://github.com/tindy2013/subconverter)作为后端。
 
 ## 🌟 主要功能
 
