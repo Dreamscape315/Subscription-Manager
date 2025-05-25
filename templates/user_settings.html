@@ -35,17 +35,31 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-floating mb-3">
-                                <input type="password" class="form-control" id="current_password" name="current_password" 
-                                       placeholder="Current Password">
-                                <label for="current_password">Current Password</label>
+                                <div class="input-group">
+                                    <div class="form-floating flex-grow-1">
+                                        <input type="password" class="form-control" id="current_password" name="current_password" 
+                                               placeholder="Current Password">
+                                        <label for="current_password">Current Password</label>
+                                    </div>
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword" title="Show/Hide Password">
+                                        <i class="bi bi-eye" id="toggleCurrentPasswordIcon"></i>
+                                    </button>
+                                </div>
                                 <div class="form-text">Current password is required when changing password</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating mb-3">
-                                <input type="password" class="form-control" id="new_password" name="new_password" 
-                                       placeholder="New Password" minlength="6">
-                                <label for="new_password">New Password (Optional)</label>
+                                <div class="input-group">
+                                    <div class="form-floating flex-grow-1">
+                                        <input type="password" class="form-control" id="new_password" name="new_password" 
+                                               placeholder="New Password" minlength="6">
+                                        <label for="new_password">New Password (Optional)</label>
+                                    </div>
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword" title="Show/Hide Password">
+                                        <i class="bi bi-eye" id="toggleNewPasswordIcon"></i>
+                                    </button>
+                                </div>
                                 <div class="form-text">Leave blank to keep current password</div>
                             </div>
                         </div>
@@ -122,7 +136,7 @@
 
 {% block scripts %}
 <script>
-// Check remember status
+// Check remember status and initialize password toggles
 document.addEventListener('DOMContentLoaded', function() {
     const savedUsername = localStorage.getItem('rememberedUsername');
     const statusElement = document.getElementById('rememberStatus');
@@ -132,7 +146,41 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         statusElement.innerHTML = `<i class="bi bi-x-circle text-muted"></i> No username remembered`;
     }
+    
+    // Initialize password toggle functionality
+    initPasswordToggle();
 });
+
+// Password toggle functionality
+function initPasswordToggle() {
+    // Toggle for current password field
+    const toggleCurrentButton = document.getElementById('toggleCurrentPassword');
+    const currentPasswordInput = document.getElementById('current_password');
+    const toggleCurrentIcon = document.getElementById('toggleCurrentPasswordIcon');
+    
+    toggleCurrentButton.addEventListener('click', function() {
+        const isPassword = currentPasswordInput.type === 'password';
+        
+        currentPasswordInput.type = isPassword ? 'text' : 'password';
+        toggleCurrentIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+        toggleCurrentButton.title = isPassword ? 'Hide Password' : 'Show Password';
+        currentPasswordInput.focus();
+    });
+    
+    // Toggle for new password field
+    const toggleNewButton = document.getElementById('toggleNewPassword');
+    const newPasswordInput = document.getElementById('new_password');
+    const toggleNewIcon = document.getElementById('toggleNewPasswordIcon');
+    
+    toggleNewButton.addEventListener('click', function() {
+        const isPassword = newPasswordInput.type === 'password';
+        
+        newPasswordInput.type = isPassword ? 'text' : 'password';
+        toggleNewIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+        toggleNewButton.title = isPassword ? 'Hide Password' : 'Show Password';
+        newPasswordInput.focus();
+    });
+}
 
 // Clear remembered data
 function clearRememberedData() {

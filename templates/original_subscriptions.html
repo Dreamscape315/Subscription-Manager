@@ -5,7 +5,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-list-ul"></i> Original Subscription Management</h2>
-    <a href="{{ url_for('add_original_subscription') }}" class="btn btn-primary">
+    <a href="{{ url_for('add_original_subscription') }}" class="btn btn-gradient">
         <i class="bi bi-plus-circle"></i> Add Subscription
     </a>
 </div>
@@ -29,11 +29,11 @@
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <form method="POST" action="{{ url_for('delete_original_subscription', id=subscription.id) }}" class="d-inline">
-                                <button type="submit" class="dropdown-item text-danger btn-delete">
-                                    <i class="bi bi-trash"></i> Delete
-                                </button>
-                            </form>
+                            <button type="button" class="dropdown-item text-danger btn-delete-confirm" 
+                                    data-id="{{ subscription.id }}" 
+                                    data-name="{{ subscription.name }}">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
                         </li>
                     </ul>
                 </div>
@@ -85,9 +85,191 @@
     <i class="bi bi-inbox" style="font-size: 4rem; color: #dee2e6;"></i>
     <h4 class="mt-3 text-muted">No original subscriptions yet</h4>
     <p class="text-muted mb-4">Add your first subscription source to get started</p>
-    <a href="{{ url_for('add_original_subscription') }}" class="btn btn-primary btn-lg">
+    <a href="{{ url_for('add_original_subscription') }}" class="btn btn-gradient btn-lg">
         <i class="bi bi-plus-circle"></i> Add First Subscription
     </a>
 </div>
 {% endif %}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the subscription "<span id="subscriptionName"></span>"?</p>
+                
+                <!-- Loading indicator -->
+                <div id="loadingIndicator" class="text-center">
+                    <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="visually-hidden">Checking...</span>
+                    </div>
+                    <span class="ms-2">Checking deletion constraints...</span>
+                </div>
+                
+                <!-- Deletion blocked message -->
+                <div id="blockedMessage" class="alert alert-danger d-none">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Deletion Blocked!</strong>
+                    <div id="blockedDetails" class="mt-2"></div>
+                </div>
+                
+                <!-- Warning message for force delete -->
+                <div id="warningMessage" class="alert alert-warning d-none">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Warning:</strong> This subscription may be used in composite subscriptions. 
+                    If it is the ONLY subscription in any composite subscription, the deletion will be blocked. 
+                    You can use force delete to automatically remove related composite subscriptions.
+                </div>
+                
+                <!-- Force delete options -->
+                <div id="forceDeleteSection" class="d-none">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="forceDelete">
+                        <label class="form-check-label" for="forceDelete">
+                            <strong>Force delete:</strong> Delete this subscription and automatically delete composite subscriptions that would become empty
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Success message -->
+                <div id="successMessage" class="alert alert-success d-none">
+                    <i class="bi bi-check-circle"></i>
+                    <strong>Safe to delete:</strong> This subscription can be deleted without issues.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" class="d-inline">
+                    <input type="hidden" name="force_delete" id="forceDeleteInput" value="false">
+                    <input type="hidden" name="force_action" id="forceActionInput" value="delete_composites">
+                    <button type="submit" class="btn btn-danger" id="deleteButton" disabled>Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('.btn-delete-confirm');
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const deleteForm = document.getElementById('deleteForm');
+    const subscriptionNameSpan = document.getElementById('subscriptionName');
+    const forceDeleteCheckbox = document.getElementById('forceDelete');
+    const forceDeleteInput = document.getElementById('forceDeleteInput');
+    const forceActionInput = document.getElementById('forceActionInput');
+    const deleteButton = document.getElementById('deleteButton');
+    
+    // Handle dropdown menu z-index issues
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('show.bs.dropdown', function() {
+            // Add high z-index class to parent card when dropdown opens
+            const card = this.closest('.subscription-card');
+            if (card) {
+                card.classList.add('dropdown-active');
+            }
+        });
+        
+        toggle.addEventListener('hide.bs.dropdown', function() {
+            // Remove high z-index class when dropdown closes
+            const card = this.closest('.subscription-card');
+            if (card) {
+                card.classList.remove('dropdown-active');
+            }
+        });
+    });
+    
+    // UI elements
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const blockedMessage = document.getElementById('blockedMessage');
+    const blockedDetails = document.getElementById('blockedDetails');
+    const warningMessage = document.getElementById('warningMessage');
+    const forceDeleteSection = document.getElementById('forceDeleteSection');
+    const successMessage = document.getElementById('successMessage');
+    
+    let currentSubscriptionId = null;
+    
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            currentSubscriptionId = this.dataset.id;
+            const subscriptionName = this.dataset.name;
+            
+            subscriptionNameSpan.textContent = subscriptionName;
+            deleteForm.action = `/delete-original-subscription/${currentSubscriptionId}`;
+            
+            // Reset UI state
+            resetModalState();
+            
+            // Show modal and check deletion constraints
+            deleteModal.show();
+            checkDeletionConstraints(currentSubscriptionId);
+        });
+    });
+    
+    function resetModalState() {
+        // Hide all messages
+        loadingIndicator.classList.remove('d-none');
+        blockedMessage.classList.add('d-none');
+        warningMessage.classList.add('d-none');
+        forceDeleteSection.classList.add('d-none');
+        successMessage.classList.add('d-none');
+        
+        // Reset form state
+        forceDeleteCheckbox.checked = false;
+        forceDeleteInput.value = 'false';
+        forceActionInput.value = 'delete_composites';
+        
+        // Disable delete button initially
+        deleteButton.disabled = true;
+    }
+    
+    function checkDeletionConstraints(subscriptionId) {
+        fetch(`/check-deletion/${subscriptionId}`)
+            .then(response => response.json())
+            .then(data => {
+                loadingIndicator.classList.add('d-none');
+                
+                if (data.can_delete) {
+                    // Can delete safely
+                    successMessage.classList.remove('d-none');
+                    deleteButton.disabled = false;
+                    deleteButton.textContent = 'Delete';
+                } else {
+                    // Deletion is blocked
+                    blockedMessage.classList.remove('d-none');
+                    blockedDetails.innerHTML = data.warning_message;
+                    
+                    // Show force delete options
+                    forceDeleteSection.classList.remove('d-none');
+                    deleteButton.textContent = 'Delete (Blocked)';
+                }
+            })
+            .catch(error => {
+                console.error('Error checking deletion constraints:', error);
+                loadingIndicator.classList.add('d-none');
+                warningMessage.classList.remove('d-none');
+                forceDeleteSection.classList.remove('d-none');
+                deleteButton.disabled = false;
+                deleteButton.textContent = 'Delete';
+            });
+    }
+    
+    forceDeleteCheckbox.addEventListener('change', function() {
+        forceDeleteInput.value = this.checked ? 'true' : 'false';
+        
+        if (this.checked) {
+            deleteButton.disabled = false;
+            deleteButton.textContent = 'Force Delete';
+        } else {
+            deleteButton.disabled = true;
+            deleteButton.textContent = 'Delete (Blocked)';
+        }
+    });
+});
+</script>
 {% endblock %} 
