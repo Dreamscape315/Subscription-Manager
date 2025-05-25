@@ -9,15 +9,13 @@ A modern multi-user proxy subscription management system that supports multiple 
 ### 📋 Core Functions
 - **Original Subscription Management** - Add, edit, delete original subscription sources
 - **Composite Subscription Generation** - Select multiple original subscriptions for merging
-- **Multi-format Conversion** - Support Clash, V2Ray, Surge, Quan X and other formats
+- **Multi-format Conversion** - Support Clash, V2Ray, Surge, Quan X and other formats (depend on [Subconverter](https://github.com/tindy2013/subconverter))
 - **Permanent Links** - Generate friendly permanent URLs that clients can use directly
 - **Multi-user Support** - Each user independently manages their own subscriptions
 
 ### 🔒 Security Features
 - **User Isolation** - Each user can only access their own subscriptions
 - **Admin Management** - Administrators can manage users but cannot view subscription content
-- **Session Security** - Secure session management with configurable expiration
-- **Data Validation** - Comprehensive input validation and URL verification
 
 ## 🚀 Quick Start
 
