@@ -470,7 +470,9 @@ def edit_composite_subscription(id):
         return redirect(url_for('composite_subscriptions'))
     
     original_subs = OriginalSubscription.query.filter_by(user_id=current_user.id).all()
-    selected_sub_ids = [mapping.original_id for mapping in composite.subscription_mappings]
+    # 按SubscriptionMapping的id排序获取已选择的订阅ID（保持正确的顺序）
+    ordered_mappings = SubscriptionMapping.query.filter_by(composite_id=composite.id).order_by(SubscriptionMapping.id).all()
+    selected_sub_ids = [mapping.original_id for mapping in ordered_mappings]
     
     return render_template('edit_composite_subscription.html', 
                          composite=composite, 
@@ -518,9 +520,11 @@ def cleanup_empty_composites():
 def subscription_redirect(friendly_url):
     composite = CompositeSubscription.query.filter_by(friendly_url=friendly_url).first_or_404()
     
-    # Get all original subscription URLs
+    # Get all original subscription URLs in order (by mapping ID - reflects insertion order)
     original_urls = []
-    for mapping in composite.subscription_mappings:
+    # 按SubscriptionMapping的id排序，id反映了插入顺序（用户选择的顺序）
+    ordered_mappings = SubscriptionMapping.query.filter_by(composite_id=composite.id).order_by(SubscriptionMapping.id).all()
+    for mapping in ordered_mappings:
         original_urls.append(mapping.original_subscription.url)
     
     if not original_urls:

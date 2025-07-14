@@ -62,38 +62,58 @@
                     </div>
                     
                     <div class="mb-4">
-                        <label class="form-label">Select Original Subscriptions to Merge *</label>
-                        <div class="form-text mb-3">Select at least one original subscription to merge</div>
+                        <label class="form-label">Select and Order Original Subscriptions *</label>
+                        <div class="form-text mb-3">
+                            <strong>左侧选择订阅源，右侧拖拽排序</strong> - subconverter会按照右侧的顺序合并订阅
+                        </div>
                         
-                        <div class="mb-2">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
-                                <label class="form-check-label fw-bold" for="selectAll">
-                                    Select All / Deselect All
-                                </label>
+                        <div class="row">
+                            <!-- 可选择的订阅列表 -->
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2">
+                                    <i class="bi bi-list-ul"></i> 可选择的订阅源
+                                </h6>
+                                <div class="border rounded p-3" style="height: 300px; overflow-y: auto;" id="availableList">
+                                    {% for sub in original_subs %}
+                                    <div class="subscription-item mb-2 p-2 border rounded" 
+                                         data-id="{{ sub.id }}" 
+                                         data-name="{{ sub.name }}"
+                                         data-description="{{ sub.description or '' }}"
+                                         onclick="addSubscription(this)"
+                                         style="cursor: pointer; transition: all 0.3s;">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong>{{ sub.name }}</strong>
+                                                {% if sub.description %}
+                                                <br><small class="text-muted">{{ sub.description }}</small>
+                                                {% endif %}
+                                            </div>
+                                            <small class="text-muted">{{ sub.created_at.strftime('%m-%d') }}</small>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- 已选择的订阅列表（支持排序） -->
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2">
+                                    <i class="bi bi-arrow-up-down"></i> 已选择的订阅源（可拖拽排序）
+                                    <small class="text-info">*合并顺序</small>
+                                </h6>
+                                <div class="border rounded p-3" style="height: 300px; overflow-y: auto; background-color: #f8f9fa;" id="selectedList">
+                                    <div class="text-center text-muted py-5" id="emptyMessage">
+                                        <i class="bi bi-arrow-left"></i> 点击左侧订阅源添加到此处
+                                        <br><small>拖拽可调整合并顺序</small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-                            {% for sub in original_subs %}
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="selected_subscriptions" 
-                                       value="{{ sub.id }}" id="sub_{{ sub.id }}" 
-                                       {% if sub.id in selected_sub_ids %}checked{% endif %}
-                                       onchange="checkSelectedSubscriptions()">
-                                <label class="form-check-label" for="sub_{{ sub.id }}">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <strong>{{ sub.name }}</strong>
-                                            {% if sub.description %}
-                                            <br><small class="text-muted">{{ sub.description }}</small>
-                                            {% endif %}
-                                        </div>
-                                        <small class="text-muted">{{ sub.created_at.strftime('%m-%d') }}</small>
-                                    </div>
-                                </label>
-                            </div>
-                            {% endfor %}
+                        <!-- 隐藏的input用于提交表单 -->
+                        <div id="hiddenInputs">
+                            <!-- 传递已选择订阅的正确顺序给JavaScript -->
+                            <script type="application/json" id="selectedSubIdsData">{{ selected_sub_ids | tojson }}</script>
                         </div>
                     </div>
                     
@@ -150,55 +170,52 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-document.getElementById('compositeForm').addEventListener('submit', function(e) {
-    if (!validateForm('compositeForm')) {
-        e.preventDefault();
-        return;
-    }
-    
-    const selectedSubs = document.querySelectorAll('input[name="selected_subscriptions"]:checked');
-    if (selectedSubs.length === 0) {
-        e.preventDefault();
-        alert('Please select at least one original subscription');
-        return;
-    }
-});
+let selectedSubscriptions = [];
 
-function checkSelectedSubscriptions() {
-    const checkboxes = document.querySelectorAll('input[name="selected_subscriptions"]:checked');
-    const submitButton = document.getElementById('submitBtn');
-    
-    if (submitButton) {
-        submitButton.disabled = checkboxes.length === 0;
-    }
-    
-    // Update select all state
-    const selectAllCheckbox = document.getElementById('selectAll');
-    const allCheckboxes = document.querySelectorAll('input[name="selected_subscriptions"]');
-    
-    if (checkboxes.length === allCheckboxes.length) {
-        selectAllCheckbox.checked = true;
-        selectAllCheckbox.indeterminate = false;
-    } else if (checkboxes.length === 0) {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = false;
-    } else {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = true;
-    }
-}
-
-// Initialize check
 document.addEventListener('DOMContentLoaded', function() {
-    checkSelectedSubscriptions();
-    
-    // Add event listeners to all checkboxes
-    document.querySelectorAll('input[name="selected_subscriptions"]').forEach(checkbox => {
-        checkbox.addEventListener('change', checkSelectedSubscriptions);
+    // 初始化可排序的已选择列表
+    const selectedList = document.getElementById('selectedList');
+    Sortable.create(selectedList, {
+        animation: 150,
+        filter: '#emptyMessage',
+        ghostClass: 'sortable-ghost',
+        onUpdate: function(evt) {
+            updateHiddenInputs();
+        }
     });
     
-    // Custom URL real-time preview
+    // 加载已选择的订阅（编辑模式）
+    const selectedSubIdsScript = document.getElementById('selectedSubIdsData');
+    if (selectedSubIdsScript) {
+        const selectedSubIds = JSON.parse(selectedSubIdsScript.textContent);
+        
+        // 按照正确的顺序初始化已选择的订阅
+        selectedSubIds.forEach(subId => {
+            const element = document.querySelector(`[data-id="${subId}"]`);
+            if (element) {
+                // 隐藏原始元素
+                element.classList.add('d-none');
+                
+                // 获取订阅信息并添加到已选择列表
+                const id = element.dataset.id;
+                const name = element.dataset.name;
+                const description = element.dataset.description;
+                
+                selectedSubscriptions.push({ id, name, description });
+            }
+        });
+        
+        // 更新显示
+        if (selectedSubscriptions.length > 0) {
+            updateSelectedList();
+            updateHiddenInputs();
+            updateSubmitButton();
+        }
+    }
+    
+    // 自定义URL实时预览
     const customUrlInput = document.getElementById('custom_url');
     const urlPreview = document.getElementById('url-preview');
     const baseUrl = '{{ request.host_url }}sub/';
@@ -207,25 +224,187 @@ document.addEventListener('DOMContentLoaded', function() {
         customUrlInput.addEventListener('input', function() {
             const customUrl = this.value.trim();
             if (customUrl) {
-                // Validate format
                 if (/^[a-zA-Z0-9_-]+$/.test(customUrl)) {
                     urlPreview.textContent = baseUrl + customUrl;
                     urlPreview.className = 'text-success';
                     this.classList.remove('is-invalid');
                     this.classList.add('is-valid');
                 } else {
-                    urlPreview.textContent = baseUrl + '[invalid format]';
+                    urlPreview.textContent = baseUrl + '[无效格式 - 只允许字母、数字、下划线和连字符]';
                     urlPreview.className = 'text-danger';
                     this.classList.remove('is-valid');
                     this.classList.add('is-invalid');
                 }
             } else {
-                urlPreview.textContent = baseUrl + '[URL cannot be empty]';
+                urlPreview.textContent = baseUrl + '[URL不能为空]';
                 urlPreview.className = 'text-warning';
                 this.classList.remove('is-invalid', 'is-valid');
             }
         });
     }
+    
+    // 表单验证
+    document.getElementById('compositeForm').addEventListener('submit', function(e) {
+        if (selectedSubscriptions.length === 0) {
+            e.preventDefault();
+            alert('请至少选择一个原始订阅源');
+            return;
+        }
+    });
+    
+    updateSubmitButton();
 });
+
+// 添加订阅到已选择列表
+function addSubscription(element) {
+    addSubscriptionToSelected(element, true);
+}
+
+function addSubscriptionToSelected(element, hideOriginal = true) {
+    const id = element.dataset.id;
+    const name = element.dataset.name;
+    const description = element.dataset.description;
+    
+    // 检查是否已经添加
+    if (selectedSubscriptions.find(sub => sub.id === id)) {
+        return;
+    }
+    
+    // 添加到已选择列表
+    selectedSubscriptions.push({ id, name, description });
+    
+    if (hideOriginal) {
+        // 隐藏原始元素
+        element.style.opacity = '0.3';
+        element.style.pointerEvents = 'none';
+        element.innerHTML += '<div class="text-success"><i class="bi bi-check-circle"></i> 已添加</div>';
+    }
+    
+    // 更新已选择列表显示
+    updateSelectedList();
+    updateHiddenInputs();
+    updateSubmitButton();
+}
+
+// 从已选择列表删除订阅
+function removeSubscription(id) {
+    selectedSubscriptions = selectedSubscriptions.filter(sub => sub.id !== id);
+    
+    // 恢复原始元素
+    const originalElement = document.querySelector(`[data-id="${id}"]`);
+    if (originalElement) {
+        originalElement.style.opacity = '1';
+        originalElement.style.pointerEvents = 'auto';
+        originalElement.classList.remove('d-none');
+        const addedIndicator = originalElement.querySelector('.text-success');
+        if (addedIndicator) {
+            addedIndicator.remove();
+        }
+    }
+    
+    updateSelectedList();
+    updateHiddenInputs();
+    updateSubmitButton();
+}
+
+// 更新已选择列表显示
+function updateSelectedList() {
+    const selectedList = document.getElementById('selectedList');
+    const emptyMessage = document.getElementById('emptyMessage');
+    
+    if (selectedSubscriptions.length === 0) {
+        emptyMessage.style.display = 'block';
+        // 清除其他内容
+        selectedList.querySelectorAll('.selected-item').forEach(item => item.remove());
+    } else {
+        emptyMessage.style.display = 'none';
+        // 清除旧的内容
+        selectedList.querySelectorAll('.selected-item').forEach(item => item.remove());
+        
+        // 添加新的内容
+        selectedSubscriptions.forEach((sub, index) => {
+            const itemHtml = `
+                <div class="selected-item mb-2 p-2 border rounded bg-white" data-id="${sub.id}" style="cursor: move;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <span class="badge bg-primary me-2">${index + 1}</span>
+                            <strong>${sub.name}</strong>
+                            ${sub.description ? `<br><small class="text-muted">${sub.description}</small>` : ''}
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <small class="text-muted me-2">
+                                <i class="bi bi-grip-vertical"></i>
+                            </small>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSubscription('${sub.id}')">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            selectedList.insertAdjacentHTML('beforeend', itemHtml);
+        });
+    }
+}
+
+// 更新隐藏输入字段
+function updateHiddenInputs() {
+    const hiddenInputs = document.getElementById('hiddenInputs');
+    hiddenInputs.innerHTML = '';
+    
+    // 获取当前排序后的订阅ID
+    const sortedIds = Array.from(document.querySelectorAll('.selected-item')).map(item => item.dataset.id);
+    
+    // 同步更新selectedSubscriptions数组的顺序
+    selectedSubscriptions.sort((a, b) => {
+        return sortedIds.indexOf(a.id) - sortedIds.indexOf(b.id);
+    });
+    
+    // 生成隐藏的input
+    selectedSubscriptions.forEach(sub => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'selected_subscriptions';
+        input.value = sub.id;
+        hiddenInputs.appendChild(input);
+    });
+    
+    // 更新序号显示
+    document.querySelectorAll('.selected-item').forEach((item, index) => {
+        const badge = item.querySelector('.badge');
+        if (badge) {
+            badge.textContent = index + 1;
+        }
+    });
+}
+
+// 更新提交按钮状态
+function updateSubmitButton() {
+    const submitButton = document.getElementById('submitBtn');
+    if (submitButton) {
+        submitButton.disabled = selectedSubscriptions.length === 0;
+    }
+}
 </script>
+
+<style>
+.subscription-item:hover {
+    background-color: #e3f2fd !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.selected-item {
+    transition: all 0.3s ease;
+}
+
+.sortable-ghost {
+    opacity: 0.5;
+    background-color: #f0f0f0;
+}
+
+.selected-item:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
 {% endblock %} 
